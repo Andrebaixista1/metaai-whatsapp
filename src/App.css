@@ -110,10 +110,21 @@ h1, h2, h3, h4, h5, h6 {
   color: #007bff !important;
   text-decoration: none;
   transition: var(--transition-default);
+  display: flex;
+  align-items: center;
+}
+
+.navbar .navbar-brand svg {
+  color: #25D366 !important; /* Cor verde oficial do WhatsApp */
+  transition: var(--transition-default);
 }
 
 .navbar .navbar-brand:hover {
   color: #0056b3 !important;
+}
+
+.navbar .navbar-brand:hover svg {
+  color: #128C7E !important; /* Verde mais escuro no hover */
 }
 
 .navbar .nav-link {
@@ -446,6 +457,23 @@ textarea:focus {
 
 .dropdown-item:last-child {
   border-bottom: none;
+}
+
+/* ===== SWITCH PERSONALIZADO ===== */
+.form-check-input:checked {
+  background-color: #007bff !important;
+  border-color: #007bff !important;
+}
+
+.form-check-input:focus {
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+  border-color: #007bff !important;
+}
+
+.form-check-label {
+  color: #495057 !important;
+  font-weight: 500;
+  cursor: pointer;
 }
 
 /* ===== BADGES CUSTOMIZADOS ===== */
