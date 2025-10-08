@@ -1,0 +1,31 @@
+{
+  "name": "WhatsApp Dispatcher",
+  "short_name": "WA Dispatcher",
+  "description": "Sistema profissional de disparos WhatsApp com API integrada",
+  "theme_color": "#25D366",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-64.svg", 
+      "sizes": "64x64",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/whatsapp-icon.svg", 
+      "sizes": "128x128",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

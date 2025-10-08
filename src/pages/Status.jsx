@@ -57,13 +57,12 @@ function Status() {
       case 'green':
         return '#28a745' // Verde
       case 'yellow':
-        return '#ffc107' // Amarelo
+      case 'orange':
+        return '#ffc107' // Amarelo/Laranja para Medium
       case 'red':
         return '#dc3545' // Vermelho
-      case 'orange':
-        return '#fd7e14' // Laranja
       default:
-        return '#6c757d' // Cinza para indefinido
+        return '#ffc107' // Amarelo para Medium (padrão)
     }
   }
   
@@ -75,7 +74,7 @@ function Status() {
       case 'red':
         return 'Low'
       default:
-        return 'Indefinido'
+        return 'Medium'
     }
   }
 
