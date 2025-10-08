@@ -1,7 +1,7 @@
 import React from 'react'
 import { Container, Row, Col, Card, Button } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-import { Plus, Activity } from 'lucide-react'
+import { Plus, Activity, ListChecks } from 'lucide-react'
 
 function Dashboard() {
   console.log('Dashboard renderizando...') // Debug
@@ -64,6 +64,32 @@ function Dashboard() {
                     >
                       <Activity size={18} className="me-2" />
                       Ver Status
+                    </Button>
+                  </Card.Body>
+                </Card>
+              </Col>
+
+              {/* Card Acompanhamento de Disparos */}
+              <Col md={6} className="mb-4">
+                <Card className="text-center shadow-sm h-100">
+                  <Card.Body className="p-4">
+                    <div className="mb-3">
+                      <div className="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style={{width: '60px', height: '60px'}}>
+                        <ListChecks size={24} className="text-info" />
+                      </div>
+                    </div>
+                    <h5 className="mb-3">Acompanhamento de Disparos</h5>
+                    <p className="text-muted mb-4">
+                      Veja progresso, resultados e status dos disparos
+                    </p>
+                    <Button 
+                      as={Link} 
+                      to="/tracking" 
+                      variant="info" 
+                      className="px-4 text-white"
+                    >
+                      <ListChecks size={18} className="me-2" />
+                      Acompanhar
                     </Button>
                   </Card.Body>
                 </Card>

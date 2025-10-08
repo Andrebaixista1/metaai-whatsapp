@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { Container, Row, Col, Card, Form, Button, Alert, Table, Badge, ProgressBar, Toast, ToastContainer } from 'react-bootstrap'
 import { Upload, Users, MessageSquare, Calendar, Clock, FileText, Send, Download, AlertCircle, ArrowLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -35,57 +35,25 @@ function Dispatch() {
     setToast({ show: true, message, bg })
   }
 
-  // Redireciona qualquer alert() remanescente para toast notify e evita popups
-  useEffect(() => {
-    const originalAlert = window.alert
-    window.alert = (msg) => notify(String(msg || ''), 'error')
-    return () => {
-      window.alert = originalAlert
-    }
-  }, [])
-
-  // Converte uma string datetime-local (YYYY-MM-DDTHH:mm) para
-  // string no fuso de São Paulo no formato YYYY-MM-DD HH:mm
-  const formatDateTimeForSaoPaulo = (value) => {
-    if (!value) return ''
-    const d = new Date(value)
-    const parts = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'America/Sao_Paulo',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    }).formatToParts(d)
-    const get = (t) => parts.find(p => p.type === t)?.value || ''
-    const y = get('year')
-    const m = get('month')
-    const day = get('day')
-    const hh = get('hour')
-    const mm = get('minute')
-    return `${y}-${m}-${day} ${hh}:${mm}`
-  }
-
-  // Função para exibir o status com primeira letra maiúscula
+  // FunÃ§Ã£o para exibir o status com primeira letra maiÃºscula
   const getStatusText = (status) => {
     if (!status) return 'Indefinido'
     return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
   }
 
-  // Função para determinar a classe do badge customizado baseada no status
+  // FunÃ§Ã£o para determinar a classe do badge customizado baseada no status
   const getStatusBadgeClass = (status) => {
     switch(status?.toLowerCase()) {
       case 'connected':
-        return 'status-badge status-connected'
+        return 'badge badge-connected'
       case 'flagged':
-        return 'status-badge status-flagged'
+        return 'badge badge-flagged'
       default:
-        return 'status-badge status-undefined'
+        return 'badge bg-secondary'
     }
   }
 
-  // Função para traduzir quality_rating
+  // FunÃ§Ã£o para traduzir quality_rating
   const getQualityText = (rating) => {
     switch(rating?.toLowerCase()) {
       case 'green':
@@ -97,7 +65,7 @@ function Dispatch() {
     }
   }
 
-  // Função para traduzir status do template
+  // FunÃ§Ã£o para traduzir status do template
   const getTemplateStatusText = (status) => {
     switch(status?.toLowerCase()) {
       case 'approved':
@@ -113,23 +81,7 @@ function Dispatch() {
     }
   }
 
-  // Função para determinar a classe do badge do template
-  const getTemplateStatusBadgeClass = (status) => {
-    switch(status?.toLowerCase()) {
-      case 'approved':
-        return 'status-badge status-success'
-      case 'pending':
-        return 'status-badge status-pending'
-      case 'rejected':
-        return 'status-badge status-error'
-      case 'disabled':
-        return 'status-badge status-undefined'
-      default:
-        return 'status-badge status-undefined'
-    }
-  }
-
-  // Função para traduzir category do template
+  // FunÃ§Ã£o para traduzir category do template
   const getTemplateCategoryText = (category) => {
     switch(category?.toLowerCase()) {
       case 'marketing':
@@ -137,7 +89,7 @@ function Dispatch() {
       case 'utility':
         return 'Utilidade'
       case 'authentication':
-        return 'Autenticação'
+        return 'AutenticaÃ§Ã£o'
       case 'transactional':
         return 'Transacional'
       case 'promotional':
@@ -149,25 +101,7 @@ function Dispatch() {
     }
   }
 
-  // Função para determinar a classe do badge de categoria
-  const getTemplateCategoryBadgeClass = (category) => {
-    switch(category?.toLowerCase()) {
-      case 'marketing':
-      case 'promotional':
-        return 'status-badge status-pending' // Laranja para marketing
-      case 'utility':
-      case 'transactional':
-        return 'status-badge status-success' // Verde para utilitário
-      case 'authentication':
-        return 'status-badge status-error' // Vermelho para autenticação
-      case 'informational':
-        return 'status-badge status-connected' // Verde claro para informativo
-      default:
-        return 'status-badge status-undefined' // Cinza para indefinido
-    }
-  }
-
-  // Função para determinar a cor baseada no quality_rating
+  // FunÃ§Ã£o para determinar a cor baseada no quality_rating
   const getQualityColor = (rating) => {
     switch(rating?.toLowerCase()) {
       case 'green':
@@ -217,7 +151,7 @@ function Dispatch() {
       const response = await fetch('https://webhook.sistemavieira.com.br/webhook/templates', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json; charset=utf-8',
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ id_account: accountId })
       })
@@ -236,7 +170,7 @@ function Dispatch() {
         } else if (data && data.body && Array.isArray(data.body)) {
           setTemplates(data.body)
         } else {
-          console.log('Formato de resposta não reconhecido:', data)
+          console.log('Formato de resposta nÃ£o reconhecido:', data)
           setTemplates([])
         }
       } else {
@@ -254,7 +188,7 @@ function Dispatch() {
     }
   }
 
-  // Buscar templates da API (função original - mantida para compatibilidade)
+  // Buscar templates da API (funÃ§Ã£o original - mantida para compatibilidade)
   const fetchTemplates = async () => {
     setLoadingTemplates(true)
     try {
@@ -279,11 +213,11 @@ function Dispatch() {
   // Carregar apenas canais ao montar o componente
   useEffect(() => {
     fetchChannels()
-    // Não carregar templates automaticamente - agora são carregados por canal
+    // NÃ£o carregar templates automaticamente - agora sÃ£o carregados por canal
     
-    // Definir data e hora atual + 10 minutos como padrão (horário local)
+    // Definir data e hora atual + 10 minutos como padrÃ£o (horÃ¡rio local)
     const now = new Date()
-    // Adicionar 10 minutos ao horário atual
+    // Adicionar 10 minutos ao horÃ¡rio atual
     now.setMinutes(now.getMinutes() + 10)
     // Formato para datetime-local (sem ajuste de timezone)
     const year = now.getFullYear()
@@ -303,12 +237,12 @@ function Dispatch() {
   const mockChannels = [
     { id: 1, name: 'Canal Principal', phone: '+55 11 99999-9999' },
     { id: 2, name: 'Canal Marketing', phone: '+55 11 88888-8888' },
-    { id: 3, name: 'Canal Cobrança', phone: '+55 11 77777-7777' }
+    { id: 3, name: 'Canal CobranÃ§a', phone: '+55 11 77777-7777' }
   ]
 
   const mockTemplates = [
-    { record_id: 1, name: 'Promoção Black Friday', category: 'Marketing' },
-    { record_id: 2, name: 'Lembrete Vencimento', category: 'Cobrança' },
+    { record_id: 1, name: 'PromoÃ§Ã£o Black Friday', category: 'Marketing' },
+    { record_id: 2, name: 'Lembrete Vencimento', category: 'CobranÃ§a' },
     { record_id: 3, name: 'Newsletter Template', category: 'Informativo' },
     { record_id: 4, name: 'Boas Vindas', category: 'Onboarding' }
   ]
@@ -323,9 +257,9 @@ function Dispatch() {
     setCsvStats(null)
     setUploadProgress(0)
     
-    // Verificar se é CSV
+    // Verificar se Ã© CSV
     if (!file.name.toLowerCase().endsWith('.csv')) {
-      setCsvError('Por favor, selecione um arquivo CSV válido')
+      setCsvError('Por favor, selecione um arquivo CSV vÃ¡lido')
       return
     }
     
@@ -368,7 +302,7 @@ function Dispatch() {
       [name]: value
     })
     
-    // Se o canal foi alterado, buscar templates específicos
+    // Se o canal foi alterado, buscar templates especÃ­ficos
     if (name === 'channel' && value) {
       console.log('Canal selecionado:', value) // Debug
       
@@ -392,7 +326,7 @@ function Dispatch() {
         // Buscar templates para o canal selecionado
         fetchTemplatesByChannel(selectedChannel.id_account)
       } else {
-        console.log('Canal não encontrado ou sem id_account') // Debug
+        console.log('Canal nÃ£o encontrado ou sem id_account') // Debug
       }
     }
   }
@@ -429,15 +363,8 @@ function Dispatch() {
         `${channel.account_name} - ${channel.display_phone_number}`.toUpperCase() === formData.channel
       )
       
-      // Validação imediata de canal com notificação por toast
       if (!selectedChannel) {
-        notify('Canal não encontrado. Selecione um canal válido.', 'error')
-        setLoading(false)
-        return
-      }
-      
-      if (!selectedChannel) {
-        alert('Canal não encontrado. Selecione um canal válido.')
+        alert('Canal nÃ£o encontrado. Selecione um canal vÃ¡lido.')
         setLoading(false)
         return
       }
@@ -452,12 +379,12 @@ function Dispatch() {
           phone_id: selectedChannel.phone_id,
           display_phone_number: selectedChannel.display_phone_number,
           template: templates.find(t => t.name.toUpperCase() === formData.template)?.name || formData.template,
-          scheduledDateTime: formatDateTimeForSaoPaulo(formData.scheduledDateTime),
+          scheduledDateTime: new Date(formData.scheduledDateTime).toISOString().slice(0, 16).replace('T', ' '),
           intMin: formData.intervalMin,
           intMax: formData.intervalMax,
           mode: 'test',
           contacts: {
-            name: (testContact.name || '').normalize('NFC'),
+            name: testContact.name,
             phone: testContact.phone.replace(/[^0-9]/g, ''),
             email: testContact.email || null
           }
@@ -468,7 +395,7 @@ function Dispatch() {
         response = await fetch('https://webhook.sistemavieira.com.br/webhook/envio', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json; charset=utf-8',
+            'Content-Type': 'application/json',
           },
           body: JSON.stringify(dispatchData)
         })
@@ -480,31 +407,11 @@ function Dispatch() {
         formData_upload.append('phone_id', selectedChannel.phone_id)
         formData_upload.append('display_phone_number', selectedChannel.display_phone_number)
         formData_upload.append('template', templates.find(t => t.name.toUpperCase() === formData.template)?.name || formData.template)
-        formData_upload.append('scheduledDateTime', formatDateTimeForSaoPaulo(formData.scheduledDateTime))
+        formData_upload.append('scheduledDateTime', new Date(formData.scheduledDateTime).toISOString().slice(0, 16).replace('T', ' '))
         formData_upload.append('intMin', formData.intervalMin)
         formData_upload.append('intMax', formData.intervalMax)
         formData_upload.append('mode', 'csv')
-        // Se já processamos o CSV no front, reenviaremos em UTF-8 com BOM para preservar acentuação
-        let csvFileToSend = csvFile
-        try {
-          if (csvData && csvData.length > 0) {
-            const headers = ['name', 'phone', 'email']
-            const escape = (val) => {
-              const v = (val ?? '').toString().normalize('NFC')
-              return /[";\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v
-            }
-            const rows = [headers.join(';')].concat(
-              csvData.map(c => `${escape(c.name)};${escape(c.phone)};${escape(c.email ?? '')}`)
-            )
-            const BOM = '\uFEFF'
-            const content = BOM + rows.join('\n')
-            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' })
-            csvFileToSend = new File([blob], (csvFile?.name ? csvFile.name.replace(/\.csv$/i, '') : 'contatos') + '-utf8.csv', { type: 'text/csv' })
-          }
-        } catch (e) {
-          console.warn('Falha ao reencodar CSV no cliente, usando arquivo original.', e)
-        }
-        formData_upload.append('csvFile', csvFileToSend) // Arquivo reencodado em UTF-8 (ou original em fallback)
+        formData_upload.append('csvFile', csvFile) // Arquivo como binary
         formData_upload.append('contactCount', csvData.length)
         
         console.log('Dados para envio (CSV):', {
@@ -530,21 +437,35 @@ function Dispatch() {
         setShowSuccess(true)
         notify('Disparo criado com sucesso!', 'success')
         
-        // Após sucesso, recarregar a página (F5) para estado fresco
+        // Reset form after success
         setTimeout(() => {
-          window.location.reload()
-        }, 3500)
+          setShowSuccess(false)
+          setCsvFile(null)
+          setCsvData([])
+          setCsvStats(null)
+          setFormData({
+            name: '',
+            channel: '',
+            template: '',
+            scheduledDateTime: '',
+            intervalMin: 15,
+            intervalMax: 30
+          })
+          setTestContact({ name: '', phone: '', email: '' })
+          setUploadProgress(0)
+        }, 3000)
       } else {
         const errorText = await response.text()
         console.error('Erro no envio:', response.status, response.statusText, errorText)
         setLoading(false)
         notify('Erro ao enviar disparo. Verifique os detalhes.', 'error')
+        alert('Erro ao enviar disparo. Verifique o console para mais detalhes.')
       }
     } catch (error) {
       console.error('Erro ao conectar com a API de envio:', error)
       setLoading(false)
-      notify('Erro de conexão. Tente novamente mais tarde.', 'error')
-      alert('Erro de conexão. Verifique sua internet e tente novamente.')
+      notify('Erro de conexÃ£o. Tente novamente mais tarde.', 'error')
+      alert('Erro de conexÃ£o. Verifique sua internet e tente novamente.')
     }
   }
 
@@ -566,8 +487,8 @@ function Dispatch() {
   return (
     <div className="dispatch-page">
       <Container fluid className="py-4">
-        <ToastContainer position="top-end" className="p-3" style={{ zIndex: 2000 }}>
-          <Toast bg={toast.bg} onClose={() => setToast(prev => ({ ...prev, show: false }))} show={toast.show} delay={3000} autohide>
+        <ToastContainer position="bottom-end" className="p-3">
+          <Toast bg={toast.bg} onClose={() => setToast(prev => ({ ...prev, show: false }))} show={toast.show} delay={4000} autohide>
             <Toast.Body className="text-white">{toast.message}</Toast.Body>
           </Toast>
         </ToastContainer>
@@ -600,7 +521,7 @@ function Dispatch() {
                     </h6>
                     <small className="text-muted">
                       {isTestMode 
-                        ? 'Envie uma mensagem de teste para um contato específico' 
+                        ? 'Envie uma mensagem de teste para um contato especÃ­fico' 
                         : 'Carregue um arquivo CSV para disparos em massa'
                       }
                     </small>
@@ -626,19 +547,19 @@ function Dispatch() {
         {showSuccess && (
           <Alert variant="success" className="mb-4">
             <MessageSquare size={20} className="me-2" />
-            Disparo criado com sucesso! Ele será executado na data e hora agendadas.
+            Disparo criado com sucesso! Ele serÃ¡ executado na data e hora agendadas.
           </Alert>
         )}
 
         <Form onSubmit={handleSubmit}>
           <Row>
-            {/* Configuração do Disparo */}
+            {/* ConfiguraÃ§Ã£o do Disparo */}
             <Col lg={8}>
               <Card className="mb-4">
                 <Card.Header>
                   <h5 className="fw-bold mb-0">
                     <FileText size={20} className="me-2" />
-                    Configuração do Disparo
+                    ConfiguraÃ§Ã£o do Disparo
                   </h5>
                 </Card.Header>
                 <Card.Body>
@@ -651,7 +572,7 @@ function Dispatch() {
                           name="name"
                           value={formData.name}
                           onChange={handleInputChange}
-                          placeholder="Ex: Promoção Black Friday"
+                          placeholder="Ex: PromoÃ§Ã£o Black Friday"
                           required
                         />
                       </Form.Group>
@@ -698,7 +619,7 @@ function Dispatch() {
                               : loadingTemplates 
                                 ? 'Carregando templates...' 
                                 : templates.length === 0
-                                  ? 'Nenhum template disponível para este canal'
+                                  ? 'Nenhum template disponÃ­vel para este canal'
                                   : 'Selecione um template'
                             }
                           </option>
@@ -739,7 +660,7 @@ function Dispatch() {
                     </Col>
                     <Col md={6} className="mb-3">
                       <Form.Group>
-                        <Form.Label>Intervalo de Disparos (aleatório)</Form.Label>
+                        <Form.Label>Intervalo de Disparos (aleatÃ³rio)</Form.Label>
                         <div className="range-slider-container">
                           <input
                             type="range"
@@ -793,7 +714,7 @@ function Dispatch() {
                           </div>
                         </div>
                         <Form.Text className="text-muted">
-                          Faixa de tempo para enviar para o próximo contato (aleatório)
+                          Faixa de tempo para enviar para o prÃ³ximo contato (aleatÃ³rio)
                         </Form.Text>
                       </Form.Group>
                     </Col>
@@ -833,7 +754,7 @@ function Dispatch() {
                 </Card.Header>
                 <Card.Body>
                   {isTestMode ? (
-                    /* Formulário para contato teste */
+                    /* FormulÃ¡rio para contato teste */
                     <>
                       <Row>
                         <Col md={6} className="mb-3">
@@ -844,7 +765,7 @@ function Dispatch() {
                               name="name"
                               value={testContact.name}
                               onChange={handleTestContactChange}
-                              placeholder="Ex: João Silva"
+                              placeholder="Ex: JoÃ£o Silva"
                               required
                             />
                           </Form.Group>
@@ -861,7 +782,7 @@ function Dispatch() {
                               required
                             />
                             <Form.Text className="text-muted">
-                              Apenas números, sem código do país
+                              Apenas nÃºmeros, sem cÃ³digo do paÃ­s
                             </Form.Text>
                           </Form.Group>
                         </Col>
@@ -884,15 +805,15 @@ function Dispatch() {
                           <Users size={16} className="me-2" />
                           <strong>Contato de teste configurado!</strong>
                           <div className="mt-2 small">
-                            <div>✅ Nome: {testContact.name}</div>
-                            <div>✅ Telefone: {testContact.phone}</div>
-                            {testContact.email && <div>✅ Email: {testContact.email}</div>}
+                            <div>âœ… Nome: {testContact.name}</div>
+                            <div>âœ… Telefone: {testContact.phone}</div>
+                            {testContact.email && <div>âœ… Email: {testContact.email}</div>}
                           </div>
                         </Alert>
                       )}
                     </>
                   ) : (
-                    /* Formulário original do CSV */
+                    /* FormulÃ¡rio original do CSV */
                     <>
                       <CsvFormatInfo />
 
@@ -906,10 +827,10 @@ function Dispatch() {
                           disabled={processingCsv}
                         />
                         <Form.Text className="text-muted">
-                          <strong>Formato obrigatório:</strong> Separador por ponto e vírgula (;)<br />
-                          <strong>Colunas obrigatórias:</strong> name;phone<br />
+                          <strong>Formato obrigatÃ³rio:</strong> Separador por ponto e vÃ­rgula (;)<br />
+                          <strong>Colunas obrigatÃ³rias:</strong> name;phone<br />
                           <strong>Coluna opcional:</strong> email<br />
-                          <strong>Exemplo:</strong> João Silva;11999999999;joao@email.com
+                          <strong>Exemplo:</strong> JoÃ£o Silva;11999999999;joao@email.com
                         </Form.Text>
                       </Form.Group>
 
@@ -934,14 +855,14 @@ function Dispatch() {
                         <div>
                           <Alert variant="success">
                             <Users size={16} className="me-2" />
-                            <strong>Processamento concluído!</strong>
+                            <strong>Processamento concluÃ­do!</strong>
                             {csvStats && (
                               <div className="mt-2 small">
-                                <div>✅ {csvStats.validContacts} contatos válidos carregados</div>
+                                <div>âœ… {csvStats.validContacts} contatos vÃ¡lidos carregados</div>
                                 {csvStats.invalidContacts > 0 && (
-                                  <div>⚠️ {csvStats.invalidContacts} linhas ignoradas (dados inválidos)</div>
+                                  <div>âš ï¸ {csvStats.invalidContacts} linhas ignoradas (dados invÃ¡lidos)</div>
                                 )}
-                                <div>📊 Total de linhas processadas: {csvStats.totalLines}</div>
+                                <div>ðŸ“Š Total de linhas processadas: {csvStats.totalLines}</div>
                               </div>
                             )}
                           </Alert>
@@ -966,7 +887,7 @@ function Dispatch() {
                                       {contact.email ? (
                                         contact.email
                                       ) : (
-                                        <span className="text-muted fst-italic">Não informado</span>
+                                        <span className="text-muted fst-italic">NÃ£o informado</span>
                                       )}
                                     </td>
                                   </tr>
@@ -975,7 +896,7 @@ function Dispatch() {
                             </Table>
                             {csvData.length > 5 && (
                               <p className="text-muted mb-0">
-                                <strong>Mostrando 5 de {csvData.length} contatos.</strong> Todos serão processados no disparo.
+                                <strong>Mostrando 5 de {csvData.length} contatos.</strong> Todos serÃ£o processados no disparo.
                               </p>
                             )}
                           </div>
@@ -1000,7 +921,7 @@ function Dispatch() {
                   <div className="mb-3">
                     <strong>Campanha:</strong>
                     <p className="text-muted mb-0">
-                      {formData.name || 'Não informado'}
+                      {formData.name || 'NÃ£o informado'}
                     </p>
                   </div>
                   
@@ -1058,7 +979,7 @@ function Dispatch() {
                       <div className="p-3 border rounded bg-light">
                         <strong>Canal:</strong>
                         <p className="text-muted mb-0 mt-1">
-                          Não selecionado
+                          NÃ£o selecionado
                         </p>
                       </div>
                     )}
@@ -1073,11 +994,7 @@ function Dispatch() {
                         </p>
                         <div className="d-flex align-items-center mb-2">
                           <strong className="me-2">Status:</strong>
-                          <span className={getTemplateStatusBadgeClass(
-                            templates.find(t => 
-                              t.name.toUpperCase() === formData.template
-                            )?.status
-                          )}>
+                          <span className="badge bg-info text-dark">
                             {getTemplateStatusText(
                               templates.find(t => 
                                 t.name.toUpperCase() === formData.template
@@ -1088,11 +1005,7 @@ function Dispatch() {
                         
                         <div className="d-flex align-items-center">
                           <strong className="me-2">Categoria:</strong>
-                          <span className={getTemplateCategoryBadgeClass(
-                            templates.find(t => 
-                              t.name.toUpperCase() === formData.template
-                            )?.category
-                          )}>
+                          <span className="badge bg-secondary">
                             {getTemplateCategoryText(
                               templates.find(t => 
                                 t.name.toUpperCase() === formData.template
@@ -1105,7 +1018,7 @@ function Dispatch() {
                       <div className="p-3 border rounded bg-light">
                         <strong>Template:</strong>
                         <p className="text-muted mb-0 mt-1">
-                          Não selecionado
+                          NÃ£o selecionado
                         </p>
                       </div>
                     )}
@@ -1116,7 +1029,7 @@ function Dispatch() {
                     <p className="text-muted mb-0">
                       {formData.scheduledDateTime 
                         ? new Date(formData.scheduledDateTime).toLocaleString('pt-BR')
-                        : 'Não agendado'
+                        : 'NÃ£o agendado'
                       }
                     </p>
                   </div>
@@ -1182,3 +1095,4 @@ function Dispatch() {
 }
 
 export default Dispatch
+

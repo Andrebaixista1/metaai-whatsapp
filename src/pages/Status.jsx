@@ -37,11 +37,11 @@ function Status() {
   const getStatusBadgeClass = (status) => {
     switch(status?.toLowerCase()) {
       case 'connected':
-        return 'badge-connected'
+        return 'status-connected'
       case 'flagged':
-        return 'badge-flagged'
+        return 'status-flagged'
       default:
-        return 'badge bg-secondary'
+        return 'status-undefined'
     }
   }
   
@@ -186,8 +186,8 @@ function Status() {
                 <p className="text-muted mb-0">Carregando canais...</p>
               </div>
             ) : (
-              <div className="table-responsive">
-                <Table className="mb-0">
+              <div className="tracking-table-container">
+                <Table className="mb-0 tracking-table">
                   <thead>
                     <tr>
                       <th 
@@ -238,7 +238,7 @@ function Status() {
                         <td>{channel.display_phone_number}</td>
                         <td>{channel.verified_name || '-'}</td>
                         <td>
-                          <span className={`badge ${getStatusBadgeClass(channel.status)}`}>
+                          <span className={`status-badge ${getStatusBadgeClass(channel.status)}`}>
                             {getStatusText(channel.status)}
                           </span>
                         </td>

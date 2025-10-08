@@ -5,6 +5,7 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Dispatch from './pages/Dispatch'
 import Status from './pages/Status'
+import Tracking from './pages/Tracking'
 import Navbar from './components/Navbar'
 import './App.css'
 
@@ -47,6 +48,12 @@ function App() {
               <ProtectedRoute>
                 <Navbar />
                 <Status />
+              </ProtectedRoute>
+            } />
+            <Route path="/tracking" element={
+              <ProtectedRoute>
+                <Navbar />
+                <Tracking />
               </ProtectedRoute>
             } />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

@@ -15,9 +15,16 @@ export function AuthProvider({ children }) {
     { 
       id: 1, 
       username: 'admin', 
-      password: 'RuB2u2i!', // Em produÃ§Ã£o, isso seria hash
+      password: 'admin123', // Em produÃ§Ã£o, isso seria hash
       name: 'Administrador',
       email: 'admin@whatsapp-dispatcher.com'
+    },
+    { 
+      id: 2, 
+      username: 'user', 
+      password: 'user123', 
+      name: 'UsuÃ¡rio Teste',
+      email: 'user@whatsapp-dispatcher.com'
     }
   ]
 
