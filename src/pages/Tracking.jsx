@@ -41,23 +41,51 @@ function Tracking() {
     return `+55 (${ddd}) ${num.slice(0, split)}-${num.slice(split)}`
   }
 
-  const formatDateTimeSP = (value) => {
-    if (!value && value !== 0) return '-'
+  const parseDateTimeToDate = (value) => {
+    if (value === null || value === undefined || value === '') return null
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value
+
+    if (typeof value === 'number') {
+      const date = new Date(value)
+      return Number.isNaN(date.getTime()) ? null : date
+    }
+
     const str = String(value).trim()
-    if (!str) return '-'
+    if (!str) return null
 
-    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/)
-    if (isoMatch) {
-      const [, year, month, day, hour, minute] = isoMatch
-      return `${day}/${month}/${year} ${hour}:${minute}`
+    const isoWithZone = str.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.\d+)?(Z|[+-]\d{2}:?\d{2})$/i)
+    if (isoWithZone) {
+      const date = new Date(str)
+      return Number.isNaN(date.getTime()) ? null : date
     }
 
-    const brMatch = str.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})/)
+    const isoLocal = str.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2})(?::(\d{2}))?)?$/)
+    if (isoLocal) {
+      const [, year, month, day, hour = '00', minute = '00'] = isoLocal
+      return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute))
+    }
+
+    const brMatch = str.match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2})(?::(\d{2}))?)?$/)
     if (brMatch) {
-      return str
+      const [, day, month, year, hour = '00', minute = '00'] = brMatch
+      return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute))
     }
 
-    return str
+    const numericTimestamp = Number(str)
+    if (!Number.isNaN(numericTimestamp)) {
+      const date = new Date(numericTimestamp)
+      return Number.isNaN(date.getTime()) ? null : date
+    }
+
+    const fallback = new Date(str)
+    return Number.isNaN(fallback.getTime()) ? null : fallback
+  }
+
+  const formatDateTimeSP = (value) => {
+    const date = parseDateTimeToDate(value)
+    if (!date) return '-'
+    const pad = (number) => String(number).padStart(2, '0')
+    return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`
   }
 
   const TEMPLATE_EMPTY_LABEL = 'Sem template'
@@ -262,14 +290,12 @@ function Tracking() {
 
   // Função para converter datetime-local para Date
   const parseLocalDateTime = (datetimeLocal) => {
-    if (!datetimeLocal) return null
-    return new Date(datetimeLocal)
+    return parseDateTimeToDate(datetimeLocal)
   }
 
   // Função para obter Date do timestamp da API
   const getDateFromTimestamp = (timestamp) => {
-    if (!timestamp) return null
-    return new Date(timestamp)
+    return parseDateTimeToDate(timestamp)
   }
 
   // Função para filtrar os itens
