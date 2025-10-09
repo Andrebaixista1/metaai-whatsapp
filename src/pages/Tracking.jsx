@@ -42,26 +42,27 @@ function Tracking() {
   }
 
   const formatDateTimeSP = (value) => {
-    if (!value) return '-'
-    const d = new Date(value)
-    const parts = new Intl.DateTimeFormat('pt-BR', {
-      timeZone: 'America/Sao_Paulo',
-      year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', hour12: false
-    }).formatToParts(d)
-    const get = (t) => parts.find(p => p.type === t)?.value || ''
-    const dd = get('day')
-    const mm = get('month')
-    const yyyy = get('year')
-    const hh = get('hour')
-    const min = get('minute')
-    // dd/mm/aaaa hh:mm (com separadores na data)
-    return `${dd}/${mm}/${yyyy} ${hh}:${min}`
+    if (!value && value !== 0) return '-'
+    const str = String(value).trim()
+    if (!str) return '-'
+
+    const isoMatch = str.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/)
+    if (isoMatch) {
+      const [, year, month, day, hour, minute] = isoMatch
+      return `${day}/${month}/${year} ${hour}:${minute}`
+    }
+
+    const brMatch = str.match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})/)
+    if (brMatch) {
+      return str
+    }
+
+    return str
   }
 
   const TEMPLATE_EMPTY_LABEL = 'Sem template'
 
-const normalizeStatus = (value) => {
+  const normalizeStatus = (value) => {
     if (value === null || value === undefined) return 4
     if (typeof value === 'string') {
       const trimmed = value.trim().toLowerCase()
@@ -765,7 +766,7 @@ const normalizeStatus = (value) => {
                       <th>Whatsapp</th>
                       <th>Campanha Enviada</th>
                       <th>Telefone Disparado</th>
-                      <th>Data e Hora | Agendado</th>
+                      <th>Agendamento</th>
                       <th>Criação</th>
                       <th>Status</th>
                       <th>Motivo</th>
