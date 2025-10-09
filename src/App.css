@@ -528,6 +528,18 @@ textarea:focus {
   border-color: #FFE082;
 }
 
+/* Status Trabalhando (Azul Suave) */
+.status-working {
+  background-color: #E3F2FD;
+  color: #1976D2;
+  border-color: #BBDEFB;
+}
+
+.status-working:hover {
+  background-color: #DBEAFE;
+  border-color: #93C5FD;
+}
+
 /* Status Indefinido (Cinza Suave) */
 .status-undefined {
   background-color: #F5F5F5;
@@ -735,6 +747,83 @@ textarea:focus {
 
 .sortable-header:active {
   background-color: rgba(0, 123, 255, 0.1) !important;
+}
+
+/* ===== PAGINAÇÃO CUSTOMIZADA ===== */
+.pagination-custom {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #dee2e6;
+  background: #ffffff;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  user-select: none;
+}
+
+.pagination-btn:hover:not(.disabled) {
+  background: #f8f9fa;
+  border-color: #007bff;
+  color: #007bff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+}
+
+.pagination-btn.active {
+  background: #007bff;
+  border-color: #007bff;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 123, 255, 0.25);
+}
+
+.pagination-btn.disabled {
+  background: #f8f9fa;
+  border-color: #dee2e6;
+  color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.pagination-ellipsis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: #6c757d;
+  font-weight: 500;
+  user-select: none;
+}
+
+/* Responsividade da paginação */
+@media (max-width: 576px) {
+  .pagination-custom {
+    gap: 2px;
+  }
+  
+  .pagination-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+  
+  .pagination-ellipsis {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 /* ===== BADGES ===== */

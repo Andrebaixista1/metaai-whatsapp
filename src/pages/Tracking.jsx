@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Container, Row, Col, Card, Table, Button, Badge, Spinner, Alert, Form, InputGroup } from 'react-bootstrap'
+import React, { useState, useEffect } from 'react'
+import { Container, Row, Col, Card, Table, Button, Badge, Spinner, Alert, Form, InputGroup, Pagination } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, RefreshCw, Clock, CheckCircle2, XCircle, Activity, Phone, Info, Search, Filter, Download } from 'lucide-react'
 
@@ -9,6 +9,11 @@ function Tracking() {
   const [items, setItems] = useState([])
   const [filteredItems, setFilteredItems] = useState([])
   const [tooltip, setTooltip] = useState({ visible: false, content: '', x: 0, y: 0 })
+  
+  // Estados da paginação
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(100)
+  const [paginatedItems, setPaginatedItems] = useState([])
   
   // Estados dos filtros
   const [filters, setFilters] = useState({
@@ -93,6 +98,13 @@ function Tracking() {
           <span className="status-badge status-error">
             <XCircle size={12} className="me-1"/> 
             Erro
+          </span>
+        )
+      case 3:
+        return (
+          <span className="status-badge status-working">
+            <Clock size={12} className="me-1"/> 
+            Trabalhando dados
           </span>
         )
       case 0:
@@ -275,9 +287,70 @@ function Tracking() {
     switch (s) {
       case 1: return 'Enviado'
       case 2: return 'Erro'
+      case 3: return 'Trabalhando dados'
       case 0: return 'Pendente'
       default: return 'Indefinido'
     }
+  }
+
+  // Funções de paginação
+  const applyPagination = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    const paginated = filteredItems.slice(startIndex, endIndex)
+    setPaginatedItems(paginated)
+  }
+
+  // Aplicar paginação sempre que filteredItems, currentPage ou itemsPerPage mudarem
+  useEffect(() => {
+    applyPagination()
+  }, [filteredItems, currentPage, itemsPerPage])
+
+  // Resetar para primeira página quando filtros mudarem
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filters])
+
+  // Calcular total de páginas
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage)
+
+  // Função para mudar página
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber)
+  }
+
+  // Função para mudar quantidade de itens por página
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage)
+    setCurrentPage(1)
+  }
+
+  // Função para obter range de páginas a mostrar
+  const getPaginationRange = () => {
+    const delta = 2 // Número de páginas antes e depois da atual
+    const range = []
+    const rangeWithDots = []
+    let l
+
+    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+      range.push(i)
+    }
+
+    if (currentPage - delta > 2) {
+      rangeWithDots.push(1, '...')
+    } else {
+      rangeWithDots.push(1)
+    }
+
+    rangeWithDots.push(...range)
+
+    if (currentPage + delta < totalPages - 1) {
+      rangeWithDots.push('...', totalPages)
+    } else if (totalPages > 1) {
+      rangeWithDots.push(totalPages)
+    }
+
+    return rangeWithDots
   }
 
   // Função para gerar e baixar CSV
@@ -510,12 +583,98 @@ function Tracking() {
             {/* Contador de resultados */}
             <div className="mt-3 pt-3 border-top">
               <small className="text-muted">
-                Exibindo {filteredItems.length} de {items.length} registros
-                {filteredItems.length !== items.length && ' (filtrados)'}
+                Exibindo {paginatedItems.length} de {filteredItems.length} registros
+                {filteredItems.length !== items.length && ` (${items.length} total, filtrados)`}
               </small>
             </div>
           </Card.Body>
         </Card>
+
+        {/* Controles de Paginação Acima da Tabela */}
+        {totalPages > 1 && (
+          <Card className="shadow-sm mb-3">
+            <Card.Body className="py-3">
+              {/* Aviso para muitos registros */}
+              {filteredItems.length > 500 && (
+                <Alert variant="warning" className="mb-3 small">
+                  ⚠️ <strong>Muitos registros encontrados ({filteredItems.length})</strong> - 
+                  Para melhor performance, considere usar filtros para reduzir os resultados.
+                </Alert>
+              )}
+              
+              <div className="d-flex justify-content-between align-items-center">
+                {/* Info de registros e seletor de itens por página */}
+                <div className="d-flex align-items-center gap-3">
+                  <small className="text-muted">
+                    Mostrando {((currentPage - 1) * itemsPerPage) + 1} a {Math.min(currentPage * itemsPerPage, filteredItems.length)} de {filteredItems.length} registros
+                  </small>
+                  
+                  <div className="d-flex align-items-center">
+                    <label className="form-label mb-0 me-2 small">Itens:</label>
+                    <select 
+                      className="form-select form-select-sm" 
+                      style={{width: 'auto', minWidth: '70px'}}
+                      value={itemsPerPage}
+                      onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                    >
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                      <option value={200}>200</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {/* Navegação por páginas estilo imagem */}
+                <div className="pagination-custom d-flex align-items-center gap-1">
+                  {/* Seta anterior */}
+                  <button 
+                    className={`pagination-btn ${currentPage === 1 ? 'disabled' : ''}`}
+                    onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    title="Página anterior"
+                  >
+                    ❮
+                  </button>
+                  
+                  {/* Números das páginas */}
+                  {getPaginationRange().map((page, index) => {
+                    if (page === '...') {
+                      return (
+                        <span key={`ellipsis-${index}`} className="pagination-ellipsis">
+                          ...
+                        </span>
+                      )
+                    }
+                    
+                    return (
+                      <button
+                        key={page}
+                        className={`pagination-btn ${
+                          page === currentPage ? 'active' : ''
+                        }`}
+                        onClick={() => handlePageChange(page)}
+                        title={`Página ${page}`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  })}
+                  
+                  {/* Seta próxima */}
+                  <button 
+                    className={`pagination-btn ${currentPage === totalPages ? 'disabled' : ''}`}
+                    onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    title="Próxima página"
+                  >
+                    ❯
+                  </button>
+                </div>
+              </div>
+            </Card.Body>
+          </Card>
+        )}
 
         <Card className="shadow-sm">
           <Card.Header>
@@ -547,7 +706,7 @@ function Tracking() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredItems.map((it, idx) => (
+                    {paginatedItems.map((it, idx) => (
                       <tr key={`${it.id}-${idx}`}>
                         <td className="text-muted">{it.id}</td>
                         <td>{it.name}</td>
@@ -561,7 +720,7 @@ function Tracking() {
                         <td className="text-muted">{it.template}</td>
                       </tr>
                     ))}
-                    {filteredItems.length === 0 && (
+                    {paginatedItems.length === 0 && filteredItems.length === 0 && (
                       <tr>
                         <td colSpan={10} className="text-center text-muted py-4">
                           {items.length === 0 ? 'Nenhum disparo encontrado.' : 'Nenhum registro corresponde aos filtros aplicados.'}

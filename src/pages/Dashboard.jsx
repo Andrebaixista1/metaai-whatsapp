@@ -1,7 +1,7 @@
 import React from 'react'
 import { Container, Row, Col, Card, Button } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-import { Plus, Activity, ListChecks } from 'lucide-react'
+import { Plus, Activity, ListChecks, Copy } from 'lucide-react'
 
 function Dashboard() {
   console.log('Dashboard renderizando...') // Debug
@@ -38,6 +38,32 @@ function Dashboard() {
                     >
                       <Plus size={18} className="me-2" />
                       Novo Disparo
+                    </Button>
+                  </Card.Body>
+                </Card>
+              </Col>
+              
+              {/* Card Multiplos Disparos */}
+              <Col md={6} className="mb-4">
+                <Card className="text-center shadow-sm h-100">
+                  <Card.Body className="p-4">
+                    <div className="mb-3">
+                      <div className="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style={{width: '60px', height: '60px'}}>
+                        <Copy size={24} className="text-warning" />
+                      </div>
+                    </div>
+                    <h5 className="mb-3">Multiplos Disparos</h5>
+                    <p className="text-muted mb-4">
+                      Configure e agende múltiplos disparos simultâneos
+                    </p>
+                    <Button 
+                      as={Link} 
+                      to="/multiple-dispatch" 
+                      variant="warning" 
+                      className="px-4"
+                    >
+                      <Copy size={18} className="me-2" />
+                      Multiplos Disparos
                     </Button>
                   </Card.Body>
                 </Card>
@@ -101,7 +127,5 @@ function Dashboard() {
     </div>
   )
 }
-
-
 
 export default Dashboard

@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Dispatch from './pages/Dispatch'
+import MultipleDispatch from './pages/MultipleDispatch'
 import Status from './pages/Status'
 import Tracking from './pages/Tracking'
 import Navbar from './components/Navbar'
@@ -42,6 +43,12 @@ function App() {
               <ProtectedRoute>
                 <Navbar />
                 <Dispatch />
+              </ProtectedRoute>
+            } />
+            <Route path="/multiple-dispatch" element={
+              <ProtectedRoute>
+                <Navbar />
+                <MultipleDispatch />
               </ProtectedRoute>
             } />
             <Route path="/status" element={
