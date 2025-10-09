@@ -528,6 +528,18 @@ textarea:focus {
   border-color: #FFE082;
 }
 
+/* Status Sem Template (Lilás Suave) */
+.status-awaiting-template {
+  background-color: #F3E8FF;
+  color: #6C2BD9;
+  border-color: #E0C3FC;
+}
+
+.status-awaiting-template:hover {
+  background-color: #E5D5FF;
+  border-color: #D0B4FA;
+}
+
 /* Status Trabalhando (Azul Suave) */
 .status-working {
   background-color: #E3F2FD;
@@ -1224,3 +1236,7 @@ textarea:focus {
     padding-right: 0.5rem;
   }
 }
+.text-template {
+  color: #6C2BD9 !important;
+}
+

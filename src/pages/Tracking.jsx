@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Container, Row, Col, Card, Table, Button, Badge, Spinner, Alert, Form, InputGroup, Pagination } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, RefreshCw, Clock, CheckCircle2, XCircle, Activity, Phone, Info, Search, Filter, Download } from 'lucide-react'
+import { ArrowLeft, RefreshCw, Clock, CheckCircle2, XCircle, Activity, Phone, Info, Search, Filter, Download, FileText } from 'lucide-react'
 
 function Tracking() {
   const [loading, setLoading] = useState(false)
@@ -59,6 +59,29 @@ function Tracking() {
     return `${dd}/${mm}/${yyyy} ${hh}:${min}`
   }
 
+  const TEMPLATE_EMPTY_LABEL = 'Sem template'
+
+const normalizeStatus = (value) => {
+    if (value === null || value === undefined) return 4
+    if (typeof value === 'string') {
+      const trimmed = value.trim().toLowerCase()
+      if (!trimmed || trimmed === 'null' || trimmed === 'sem template') {
+        return 4
+      }
+    }
+    const numeric = Number(value)
+    return Number.isNaN(numeric) ? value : numeric
+  }
+
+  const normalizeTemplate = (value) => {
+    if (value === null || value === undefined) return TEMPLATE_EMPTY_LABEL
+    const str = String(value).trim()
+    if (!str || str.toLowerCase() === 'null') {
+      return TEMPLATE_EMPTY_LABEL
+    }
+    return str
+  }
+
   const fetchData = async () => {
     setLoading(true)
     setError('')
@@ -84,7 +107,7 @@ function Tracking() {
   }, [])
 
   const statusBadge = (status) => {
-    const s = Number(status)
+    const s = normalizeStatus(status)
     switch (s) {
       case 1:
         return (
@@ -114,6 +137,13 @@ function Tracking() {
             Pendente
           </span>
         )
+      case 4:
+        return (
+          <span className="status-badge status-awaiting-template">
+            <FileText size={12} className="me-1"/> 
+            Sem template
+          </span>
+        )
       default:
         return (
           <span className="status-badge status-undefined">
@@ -124,8 +154,32 @@ function Tracking() {
   }
 
   const renderMotivo = (typeError, sendStatus) => {
+    if (normalizeStatus(sendStatus) === 4) {
+      const handleMouseEnter = (e) => {
+        const rect = e.target.getBoundingClientRect()
+        setTooltip({
+          visible: true,
+          content: 'Aguardando Template',
+          x: rect.left + rect.width / 2,
+          y: rect.top - 10
+        })
+      }
+
+      const handleMouseLeave = () => {
+        setTooltip({ visible: false, content: '', x: 0, y: 0 })
+      }
+
+      return (
+        <Info
+          size={16}
+          className="text-template cursor-pointer motivo-icon-simple"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        />
+      )
+    }
     // Se não há erro e foi enviado com sucesso
-    if (!typeError && Number(sendStatus) === 1) {
+    if (!typeError && normalizeStatus(sendStatus) === 1) {
       const handleMouseEnter = (e) => {
         const rect = e.target.getBoundingClientRect()
         setTooltip({
@@ -185,11 +239,23 @@ function Tracking() {
     const values = items.map(item => {
       switch(field) {
         case 'campanha': return item.nameBatch
-        case 'status': return item.sendStatus
-        case 'template': return item.template
+        case 'status': {
+          const normalized = normalizeStatus(item.sendStatus)
+          return normalized === undefined ? '' : String(normalized)
+        }
+        case 'template': return normalizeTemplate(item.template)
         default: return ''
       }
     })
+
+    if (field === 'status') {
+      return [...new Set(values.filter(v => v !== ''))].sort((a, b) => Number(a) - Number(b))
+    }
+
+    if (field === 'template') {
+      return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b))
+    }
+
     return [...new Set(values.filter(Boolean))].sort()
   }
 
@@ -216,7 +282,7 @@ function Tracking() {
     
     // Filtro por status
     if (filters.status) {
-      filtered = filtered.filter(item => item.sendStatus?.toString() === filters.status)
+      filtered = filtered.filter(item => String(normalizeStatus(item.sendStatus)) === filters.status)
     }
     
     // Filtro por data agendada (>= data digitada)
@@ -243,7 +309,7 @@ function Tracking() {
     
     // Filtro por template
     if (filters.template) {
-      filtered = filtered.filter(item => item.template === filters.template)
+      filtered = filtered.filter(item => normalizeTemplate(item.template) === filters.template)
     }
     
     // Filtro por busca (cliente, whatsapp, telefone disparado)
@@ -283,11 +349,12 @@ function Tracking() {
 
   // Função para obter texto do status
   const getStatusText = (status) => {
-    const s = Number(status)
+    const s = normalizeStatus(status)
     switch (s) {
       case 1: return 'Enviado'
       case 2: return 'Erro'
       case 3: return 'Trabalhando dados'
+      case 4: return 'Sem template'
       case 0: return 'Pendente'
       default: return 'Indefinido'
     }
@@ -371,7 +438,7 @@ function Tracking() {
 
     // Converter dados filtrados para CSV
     const csvData = filteredItems.map(item => {
-      const motivo = item.typeError || (Number(item.sendStatus) === 1 ? 'Enviado com Sucesso' : '')
+      const motivo = item.typeError || (normalizeStatus(item.sendStatus) === 1 ? 'Enviado com Sucesso' : '')
       
       return [
         item.id || '',
@@ -383,7 +450,7 @@ function Tracking() {
         formatDateTimeSP(item.criado_em) || '',
         getStatusText(item.sendStatus),
         motivo,
-        item.template || ''
+        normalizeTemplate(item.template)
       ]
     })
 

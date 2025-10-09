@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom'
 import { processCsvFile, validateCsvStructure, generateSampleCsv } from '../utils/csvUtils'
 import CsvFormatInfo from '../components/CsvFormatInfo'
 
+const DEFAULT_BATCH_SIZE = 100
+
 function MultipleDispatch() {
   const [csvFile, setCsvFile] = useState(null)
   const [csvData, setCsvData] = useState([])
@@ -22,10 +24,10 @@ function MultipleDispatch() {
     name: '',
     scheduledDateTime: '',
     intervalMin: 15,
-    intervalMax: 30,
-    batchSize: 100
+    intervalMax: 30
   })
   const [toast, setToast] = useState({ show: false, message: '', bg: 'success' })
+  const [channelBatchSizes, setChannelBatchSizes] = useState({})
 
   const notify = (message, type = 'success') => {
     const bg = type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'danger'
@@ -110,14 +112,22 @@ function MultipleDispatch() {
   // Função para selecionar/deselecionar todos os canais
   const toggleSelectAllChannels = (checked) => {
     if (checked) {
-      // Selecionar todos os canais
       setSelectedChannels([...channels])
+      setChannelBatchSizes(prev => {
+        const updated = { ...prev }
+        channels.forEach(channel => {
+          if (updated[channel.record_id] === undefined) {
+            updated[channel.record_id] = String(DEFAULT_BATCH_SIZE)
+          }
+        })
+        return updated
+      })
     } else {
-      // Deselecionar todos os canais
       setSelectedChannels([])
       setChannelTemplates({})
       setSelectedTemplates({})
       setExpandedChannels(new Set())
+      setChannelBatchSizes({})
     }
   }
 
@@ -143,8 +153,19 @@ function MultipleDispatch() {
         newExpanded.delete(channelId)
         return newExpanded
       })
+      setChannelBatchSizes(prev => {
+        const updated = { ...prev }
+        delete updated[channelId]
+        return updated
+      })
     } else {
       setSelectedChannels(prev => [...prev, channel])
+      setChannelBatchSizes(prev => {
+        if (prev[channelId] !== undefined) {
+          return prev
+        }
+        return { ...prev, [channelId]: String(DEFAULT_BATCH_SIZE) }
+      })
       // Não carregar templates automaticamente - apenas quando expandir
     }
   }
@@ -374,6 +395,33 @@ function MultipleDispatch() {
     })
   }
 
+  const handleChannelBatchSizeChange = (channelId, rawValue) => {
+    const digitsOnly = rawValue.replace(/[^0-9]/g, '')
+    if (!digitsOnly) {
+      setChannelBatchSizes(prev => ({ ...prev, [channelId]: '' }))
+      return
+    }
+
+    const numeric = Math.min(Math.max(parseInt(digitsOnly, 10), 1), 1000)
+    setChannelBatchSizes(prev => ({ ...prev, [channelId]: String(numeric) }))
+  }
+
+  const handleChannelBatchSizeBlur = (channelId) => {
+    setChannelBatchSizes(prev => {
+      const current = prev[channelId]
+      if (current === undefined || current === '') {
+        return { ...prev, [channelId]: String(DEFAULT_BATCH_SIZE) }
+      }
+      return prev
+    })
+  }
+
+  const getChannelBatchSize = (channelId) => {
+    const raw = channelBatchSizes[channelId]
+    const parsed = parseInt(raw, 10)
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_BATCH_SIZE
+  }
+
   // Função para testar a API
   const testAPI = async () => {
     console.log('=== TESTANDO API DE MÚTIPLOS DISPAROS ===')
@@ -448,12 +496,14 @@ function MultipleDispatch() {
       // MONTAR ARRAY DE CANAIS
       const channels = selectedChannels.map(channel => {
         const template = selectedTemplates[channel.record_id]
+        const batchSize = getChannelBatchSize(channel.record_id)
         
         return {
           channel: `${channel.account_name} - ${channel.display_phone_number}`,
           phone_id: channel.phone_id || channel.record_id,
           display_phone_number: channel.display_phone_number,
-          template: template.name
+          template: template.name,
+          batchSize
         }
       })
       
@@ -468,7 +518,6 @@ function MultipleDispatch() {
       formData_upload.append('intMax', String(formData.intervalMax))
       formData_upload.append('mode', 'csv')
       formData_upload.append('contactCount', String(csvData.length))
-      formData_upload.append('batchSize', String(formData.batchSize || 100))
       formData_upload.append('csvFile', csvFileToSend)
       
       console.log('5. FormData sendo enviado:')
@@ -477,7 +526,6 @@ function MultipleDispatch() {
       console.log('   - scheduledDateTime:', formatDateTimeForSaoPaulo(formData.scheduledDateTime))
       console.log('   - intervalos:', formData.intervalMin, 'a', formData.intervalMax)
       console.log('   - contactCount:', csvData.length)
-      console.log('   - batchSize:', formData.batchSize || 100)
       
       const response = await fetch('https://webhook.sistemavieira.com.br/webhook/multi-disparos', {
         method: 'POST',
@@ -523,13 +571,13 @@ function MultipleDispatch() {
           name: '',
           scheduledDateTime: '',
           intervalMin: 15,
-          intervalMax: 30,
-          batchSize: 100
+          intervalMax: 30
         })
         setCsvFile(null)
         setCsvData([])
         setSelectedChannels([])
         setSelectedTemplates({})
+        setChannelBatchSizes({})
         setShowChannelModal(false)
         
         console.log('13. Agendando refresh da página...')
@@ -798,21 +846,13 @@ function MultipleDispatch() {
                       </Form.Group>
                     </Col>
                     <Col md={4} className="mb-3">
-                      <Form.Group>
-                        <Form.Label>Quantidade por Disparo</Form.Label>
-                        <Form.Control
-                          type="number"
-                          name="batchSize"
-                          value={formData.batchSize}
-                          onChange={handleInputChange}
-                          min="1"
-                          max="1000"
-                          placeholder="100"
-                        />
-                        <Form.Text className="text-muted">
-                          Número de contatos por lote de disparo
-                        </Form.Text>
-                      </Form.Group>
+                      <div className="p-3 border rounded bg-light">
+                        <strong>Quantidade por disparo</strong>
+                        <p className="text-muted mb-0 small">
+                          Configure um valor por canal no resumo ao lado.
+                        </p>
+                      </div>
+
                     </Col>
                   </Row>
 
@@ -835,13 +875,33 @@ function MultipleDispatch() {
                       )}
                       
                       <Alert variant="success">
-                        <strong>Processamento concluído!</strong>
+                        <strong>Processamento concluido!</strong>
                         <div className="mt-2 small">
-                          <div>✅ {csvData.length} contatos válidos carregados</div>
-                          <div className="mt-2 p-2 bg-info bg-opacity-10 rounded">
-                            <strong>📦 Lotes a serem criados:</strong> {Math.ceil(csvData.length / formData.batchSize)} lote(s)<br />
-                            <small>Cada lote conterá no máximo {formData.batchSize} contatos</small>
-                          </div>
+                          <div>{csvData.length} contatos validos carregados</div>
+                          {selectedChannels.length > 0 ? (
+                            <div className="mt-2 p-2 bg-info bg-opacity-10 rounded">
+                              <strong>Quantidades por canal:</strong>
+                              <ul className="mb-0 ps-3">
+                                {selectedChannels.map(channel => {
+                                  const channelId = channel.record_id
+                                  const configuredQuantity = getChannelBatchSize(channelId)
+                                  const availableContacts = csvData.length
+                                  const displayQuantity = configuredQuantity > availableContacts && availableContacts > 0
+                                    ? `${availableContacts} contato(s) (limitado ao arquivo)`
+                                    : `${configuredQuantity} contato(s)`
+                                  return (
+                                    <li key={channelId}>
+                                      {channel.account_name}: {displayQuantity}
+                                    </li>
+                                  )
+                                })}
+                              </ul>
+                            </div>
+                          ) : (
+                            <div className="mt-2 p-2 bg-info bg-opacity-10 rounded">
+                              <strong>Selecione canais para configurar as quantidades.</strong>
+                            </div>
+                          )}
                         </div>
                       </Alert>
                     </>
@@ -870,21 +930,44 @@ function MultipleDispatch() {
                     {selectedChannels.length > 0 ? (
                       <div>
                         <strong>Canais Selecionados ({selectedChannels.length}):</strong>
-                        <div className="mt-2">
-                          {selectedChannels.slice(0, 3).map(channel => (
-                            <div key={channel.record_id} className="p-2 border rounded bg-light mb-1 small">
-                              <strong>{channel.account_name}</strong><br />
-                              <small>{channel.display_phone_number}</small>
-                              {selectedTemplates[channel.record_id] && (
-                                <div className="mt-1">
-                                  Template: {selectedTemplates[channel.record_id].name}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                          {selectedChannels.length > 3 && (
-                            <small className="text-muted">... e mais {selectedChannels.length - 3} canal(is)</small>
-                          )}
+                        <div className="mt-2 d-flex flex-column gap-2">
+                          {selectedChannels.map(channel => {
+                            const channelId = channel.record_id
+                            const template = selectedTemplates[channelId]
+                            const currentValue = channelBatchSizes[channelId]
+                            const configuredQuantity = getChannelBatchSize(channelId)
+                            const availableContacts = csvData.length
+                            const clampedQuantity = availableContacts > 0 ? Math.min(configuredQuantity, availableContacts) : configuredQuantity
+                            const clampNote = availableContacts > 0 && configuredQuantity > availableContacts ? ' (limitado ao arquivo)' : ''
+
+                            return (
+                              <div key={channelId} className="p-2 border rounded bg-light small">
+                                <strong>{channel.account_name}</strong><br />
+                                <small>{channel.display_phone_number}</small>
+                                {template && (
+                                  <div className="mt-1">
+                                    Template: {template.name}
+                                  </div>
+                                )}
+                                <Form.Group className="mt-2">
+                                  <Form.Label className="mb-1 small fw-semibold">Quantidade por disparo</Form.Label>
+                                  <Form.Control
+                                    size="sm"
+                                    type="number"
+                                    min="1"
+                                    max="1000"
+                                    placeholder={String(DEFAULT_BATCH_SIZE)}
+                                    value={currentValue ?? String(DEFAULT_BATCH_SIZE)}
+                                    onChange={(e) => handleChannelBatchSizeChange(channelId, e.target.value)}
+                                    onBlur={() => handleChannelBatchSizeBlur(channelId)}
+                                  />
+                                </Form.Group>
+                                <small className="text-muted d-block mt-1">
+                                  Previsto disparar ate {clampedQuantity} contato(s){clampNote}
+                                </small>
+                              </div>
+                            )
+                          })}
                         </div>
                       </div>
                     ) : (
@@ -903,9 +986,7 @@ function MultipleDispatch() {
                       {csvData.length > 0 ? (
                         <>
                           {csvData.length} contatos<br />
-                          <small>
-                            Serão criados {Math.ceil(csvData.length / formData.batchSize)} lote(s) de até {formData.batchSize} contatos cada
-                          </small>
+                          <small>Confira as quantidades configuradas por canal no resumo ao lado.</small>
                         </>
                       ) : 'Nenhum arquivo carregado'}
                     </p>
